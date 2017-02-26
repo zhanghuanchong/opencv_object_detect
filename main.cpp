@@ -27,37 +27,13 @@ void colorReduce(const Mat& image,Mat& outImage,int div)
 
 int main(int argc, char** argv) {
     Mat image;
-    image = imread( argv[1], 0 );
-
-    if( argc != 2 || !image.data )
-    {
-        printf( "No image data \n" );
-
-        return -1;
-    }
+    image = imread( "../input/plan1.jpg", 0 );
 
     namedWindow( "Display Image" );
 
     Mat newImage;
     newImage.create(image.size(), image.type());
     colorReduce(image, newImage, 128);
-
-    // 计算颜色直方图
-    const int channels[3]={0,1,2};
-    const int histSize[3]={256,256,256};
-    float hranges[2]={0,255};
-    const float* ranges[3]={hranges,hranges,hranges};
-    MatND hist;
-    calcHist(&newImage,1,channels,Mat(),hist,3,histSize,ranges);
-
-    // 直方图归一化
-    normalize(hist,hist,1.0);
-
-    // 直方图反向映射
-    Mat result;
-    calcBackProject(&newImage,1,channels,hist,result,ranges,255);
-    // 将结果进行阈值化
-    threshold(result,result,255*(0.05),255,THRESH_BINARY);
 
     imshow( "Display Image", newImage );
 

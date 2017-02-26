@@ -3,6 +3,7 @@
 #include <opencv/highgui.h>
 
 using namespace cv;
+using namespace std;
 
 void colorReduce(const Mat& image,Mat& outImage,int div)
 {
@@ -34,6 +35,23 @@ int main(int argc, char** argv) {
     Mat newImage;
     newImage.create(image.size(), image.type());
     colorReduce(image, newImage, 128);
+
+    CascadeClassifier cascade;
+    string filename("../input/plan1.jpg");
+    cascade.load(filename);
+
+    Mat symbol;
+    symbol = imread("../input/symbol.jpg");
+
+    vector<Rect> objects;
+    cascade.detectMultiScale(symbol, objects);
+
+    for (int i = 0; i < objects.size(); i++) {
+        Rect rect = objects[i];
+        Point p1 = rect.tl();
+        Point p2 = rect.br();
+        cout << "Rect #" << i + 1 << p1.x << ", " << p1.y << ", " << p2.x << ", " << p2.y << "." <<endl;
+    }
 
     imshow( "Display Image", newImage );
 

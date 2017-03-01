@@ -58,59 +58,15 @@ void drawOnImage(const Mat& binary,Mat& image)
 }
 
 int main(int argc, char **argv) {
-    Mat image=imread("../input/plan2.jpg");
-   /* // 彩色转灰度
-    cvtColor(image,image,CV_BGR2GRAY);
-    Mat catEdge;
-    morphologyEx(image,catEdge,MORPH_GRADIENT,Mat());
+    Mat I=imread("../input/plan2.jpg");
+    cvtColor(I,I,CV_BGR2GRAY);
 
-    // 阈值化
-    threshold(catEdge,catEdge,40,255,THRESH_BINARY);*/
+    Mat contours;
+    Canny(I,contours,125,350);
+    threshold(contours,contours,128,255,THRESH_BINARY);
 
-    // 定义结构元素
-    Mat cross(5,5,CV_8U,Scalar(0));
-    Mat diamond(5,5,CV_8U,Scalar(1));
-    Mat square(5,5,CV_8U,Scalar(1));
-    Mat x(5,5,CV_8U,Scalar(0));
-
-    for(int i=0;i<5;i++)
-    {
-        cross.at<uchar>(2,i)=1;
-        cross.at<uchar>(i,2)=1;
-
-    }
-    diamond.at<uchar>(0,0)=0;
-    diamond.at<uchar>(0,1)=0;
-    diamond.at<uchar>(1,0)=0;
-    diamond.at<uchar>(4,4)=0;
-    diamond.at<uchar>(3,4)=0;
-    diamond.at<uchar>(4,3)=0;
-    diamond.at<uchar>(4,0)=0;
-    diamond.at<uchar>(4,1)=0;
-    diamond.at<uchar>(3,0)=0;
-    diamond.at<uchar>(0,4)=0;
-    diamond.at<uchar>(0,3)=0;
-    diamond.at<uchar>(1,4)=0;
-
-    for(int i=0;i<5;i++){
-        x.at<uchar>(i,i)=1;
-        x.at<uchar>(4-i,i)=1;
-    }
-
-    Mat result;
-    dilate(image,result,cross);
-    erode(result,result,diamond);
-
-    Mat result2;
-    dilate(image,result2,x);
-    erode(result2,result2,square);
-    absdiff(result2,result,result);
-
-    threshold(result,result,40,255,THRESH_BINARY);
-
-    namedWindow("catEdge");imshow("catEdge",result);
-
-    waitKey(0);
-
+    namedWindow("Canny");
+    imshow("Canny",contours);
+    waitKey();
     return 0;
 }

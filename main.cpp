@@ -43,46 +43,27 @@ Mat getHistImg(const MatND &hist) {
 }
 
 int main(int argc, char **argv) {
-    Mat image;
-    image = imread("../input/plan2.jpg", 0);
+    Mat image = imread("../input/plan2.jpg");
+    colorReduce(image, image, 32);
 
-    const int channels[1] = {0};
-    const int histSize[1] = {256};
+    const int channels[3] = {0, 1, 2};
+    const int histSize[3] = {256, 256, 256};
     float hranges[2] = {0, 255};
-    const float *ranges[1] = {hranges};
+    const float *ranges[3] = {hranges, hranges, hranges};
     MatND hist;
-    calcHist(&image, 1, channels, Mat(), hist, 1, histSize, ranges);
-    Mat histImage = getHistImg(hist);
-    namedWindow("Image hist");
-    imshow("Image hist", histImage);
+    calcHist(&image, 1, channels, Mat(), hist, 3, histSize, ranges);
 
-    Mat newImage;
-    newImage.create(image.size(), image.type());
-    colorReduce(image, newImage, 128);
+    // 直方图归一化
+    normalize(hist, hist, 1.0);
 
-    namedWindow("Color Reduced Image");
-    imshow("Color Reduced Image", newImage);
+    // 直方图反向映射
+    Mat result;
+    calcBackProject(&image, 1, channels, hist, result, ranges, 255);
+    // 将结果进行阈值化
+    threshold(result, result, 255 * (0.05), 255, THRESH_BINARY);
 
-//    cvtColor(newImage, newImage, CV_BGR2GRAY);
-
-
-    /*CascadeClassifier cascade;
-    string filename("../input/plan1.jpg");
-    cascade.load(filename);
-
-    Mat symbol;
-    symbol = imread("../input/symbol.jpg");
-
-    vector<Rect> objects;
-    cascade.detectMultiScale(symbol, objects);
-
-    for (int i = 0; i < objects.size(); i++) {
-        Rect rect = objects[i];
-        Point p1 = rect.tl();
-        Point p2 = rect.br();
-        cout << "Rect #" << i + 1 << p1.x << ", " << p1.y << ", " << p2.x << ", " << p2.y << "." <<endl;
-    }*/
-
+    namedWindow("Window");
+    imshow("Window", result);
 
     waitKey(0);
 

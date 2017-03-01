@@ -42,28 +42,73 @@ Mat getHistImg(const MatND &hist) {
     return histImg;
 }
 
+// 标记角点
+void drawOnImage(const Mat& binary,Mat& image)
+{
+    for(int i=0;i<binary.rows;i++)
+    {
+        // 获取行指针
+        const uchar* data=binary.ptr<uchar>(i);
+        for(int j=0;j<binary.cols;j++)
+        {
+            if(data[j]) //角点图像上的白点
+                circle(image,Point(j,i),8,Scalar(0,255,0));// 画圈
+        }
+    }
+}
+
 int main(int argc, char **argv) {
-    Mat image = imread("../input/plan2.jpg");
-    colorReduce(image, image, 32);
+    Mat image=imread("../input/plan2.jpg");
+   /* // 彩色转灰度
+    cvtColor(image,image,CV_BGR2GRAY);
+    Mat catEdge;
+    morphologyEx(image,catEdge,MORPH_GRADIENT,Mat());
 
-    const int channels[3] = {0, 1, 2};
-    const int histSize[3] = {256, 256, 256};
-    float hranges[2] = {0, 255};
-    const float *ranges[3] = {hranges, hranges, hranges};
-    MatND hist;
-    calcHist(&image, 1, channels, Mat(), hist, 3, histSize, ranges);
+    // 阈值化
+    threshold(catEdge,catEdge,40,255,THRESH_BINARY);*/
 
-    // 直方图归一化
-    normalize(hist, hist, 1.0);
+    // 定义结构元素
+    Mat cross(5,5,CV_8U,Scalar(0));
+    Mat diamond(5,5,CV_8U,Scalar(1));
+    Mat square(5,5,CV_8U,Scalar(1));
+    Mat x(5,5,CV_8U,Scalar(0));
 
-    // 直方图反向映射
+    for(int i=0;i<5;i++)
+    {
+        cross.at<uchar>(2,i)=1;
+        cross.at<uchar>(i,2)=1;
+
+    }
+    diamond.at<uchar>(0,0)=0;
+    diamond.at<uchar>(0,1)=0;
+    diamond.at<uchar>(1,0)=0;
+    diamond.at<uchar>(4,4)=0;
+    diamond.at<uchar>(3,4)=0;
+    diamond.at<uchar>(4,3)=0;
+    diamond.at<uchar>(4,0)=0;
+    diamond.at<uchar>(4,1)=0;
+    diamond.at<uchar>(3,0)=0;
+    diamond.at<uchar>(0,4)=0;
+    diamond.at<uchar>(0,3)=0;
+    diamond.at<uchar>(1,4)=0;
+
+    for(int i=0;i<5;i++){
+        x.at<uchar>(i,i)=1;
+        x.at<uchar>(4-i,i)=1;
+    }
+
     Mat result;
-    calcBackProject(&image, 1, channels, hist, result, ranges, 255);
-    // 将结果进行阈值化
-    threshold(result, result, 255 * (0.05), 255, THRESH_BINARY);
+    dilate(image,result,cross);
+    erode(result,result,diamond);
 
-    namedWindow("Window");
-    imshow("Window", result);
+    Mat result2;
+    dilate(image,result2,x);
+    erode(result2,result2,square);
+    absdiff(result2,result,result);
+
+    threshold(result,result,40,255,THRESH_BINARY);
+
+    namedWindow("catEdge");imshow("catEdge",result);
 
     waitKey(0);
 

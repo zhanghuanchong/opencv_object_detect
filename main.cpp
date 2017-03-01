@@ -28,7 +28,7 @@ void colorReduce(const Mat& image,Mat& outImage,int div)
 
 int main(int argc, char** argv) {
     Mat image;
-    image = imread( "../input/plan1.jpg", 0 );
+    image = imread( "../input/plan2.jpg", 0 );
 
     namedWindow( "Display Image" );
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     newImage.create(image.size(), image.type());
     colorReduce(image, newImage, 128);
 
-    CascadeClassifier cascade;
+    /*CascadeClassifier cascade;
     string filename("../input/plan1.jpg");
     cascade.load(filename);
 
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         Point p1 = rect.tl();
         Point p2 = rect.br();
         cout << "Rect #" << i + 1 << p1.x << ", " << p1.y << ", " << p2.x << ", " << p2.y << "." <<endl;
-    }
+    }*/
 
     imshow( "Display Image", newImage );
 

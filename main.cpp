@@ -1,6 +1,8 @@
 #include <iostream>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/legacy/legacy.hpp>
 
 using namespace cv;
 using namespace std;
@@ -43,51 +45,40 @@ Mat getHistImg(const MatND &hist) {
 }
 
 // 标记角点
-void drawOnImage(const Mat& binary,Mat& image)
-{
-    for(int i=0;i<binary.rows;i++)
-    {
+void drawOnImage(const Mat &binary, Mat &image) {
+    for (int i = 0; i < binary.rows; i++) {
         // 获取行指针
-        const uchar* data=binary.ptr<uchar>(i);
-        for(int j=0;j<binary.cols;j++)
-        {
-            if(data[j]) //角点图像上的白点
-                circle(image,Point(j,i),8,Scalar(0,255,0));// 画圈
+        const uchar *data = binary.ptr<uchar>(i);
+        for (int j = 0; j < binary.cols; j++) {
+            if (data[j]) //角点图像上的白点
+                circle(image, Point(j, i), 8, Scalar(0, 255, 0));// 画圈
         }
     }
 }
 
-void drawDetectLines(Mat& image,const vector<Vec4i>& lines,Scalar & color)
-{
+void drawDetectLines(Mat &image, const vector<Vec4i> &lines, Scalar &color) {
     // 将检测到的直线在图上画出来
-    vector<Vec4i>::const_iterator it=lines.begin();
-    while(it!=lines.end())
-    {
-        Point pt1((*it)[0],(*it)[1]);
-        Point pt2((*it)[2],(*it)[3]);
-        line(image,pt1,pt2,color,2); //  线条宽度设置为2
+    vector<Vec4i>::const_iterator it = lines.begin();
+    while (it != lines.end()) {
+        Point pt1((*it)[0], (*it)[1]);
+        Point pt2((*it)[2], (*it)[3]);
+        line(image, pt1, pt2, color, 2); //  线条宽度设置为2
         ++it;
     }
 }
 
 int main(int argc, char **argv) {
     Mat image=imread("../input/plan2.jpg");
-    Mat I;
-    cvtColor(image,I,CV_BGR2GRAY);
 
-    Mat contours;
-    Canny(I,contours,125,350);
-    threshold(contours,contours,128,255,THRESH_BINARY);
+    vector<KeyPoint> keypoints;
 
-    vector<Vec4i> lines;
-    // 检测直线，最小投票为90，线条不短于50，间隙不小于10
-    HoughLinesP(contours,lines,1,CV_PI/180,80,50,10);
+    SurfFeatureDetector surf(2500.);
+    surf.detect(image,keypoints);
 
-    Scalar color = Scalar(0,255,0);
-    drawDetectLines(image,lines, color);
-
-    namedWindow("Lines");
-    imshow("Lines",image);
+    drawKeypoints(image,keypoints,image,Scalar(255,0,0),
+                  DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    namedWindow("result");
+    imshow("result",image);
     waitKey();
     return 0;
 }

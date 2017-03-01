@@ -57,16 +57,37 @@ void drawOnImage(const Mat& binary,Mat& image)
     }
 }
 
+void drawDetectLines(Mat& image,const vector<Vec4i>& lines,Scalar & color)
+{
+    // 将检测到的直线在图上画出来
+    vector<Vec4i>::const_iterator it=lines.begin();
+    while(it!=lines.end())
+    {
+        Point pt1((*it)[0],(*it)[1]);
+        Point pt2((*it)[2],(*it)[3]);
+        line(image,pt1,pt2,color,2); //  线条宽度设置为2
+        ++it;
+    }
+}
+
 int main(int argc, char **argv) {
-    Mat I=imread("../input/plan2.jpg");
-    cvtColor(I,I,CV_BGR2GRAY);
+    Mat image=imread("../input/plan2.jpg");
+    Mat I;
+    cvtColor(image,I,CV_BGR2GRAY);
 
     Mat contours;
     Canny(I,contours,125,350);
     threshold(contours,contours,128,255,THRESH_BINARY);
 
-    namedWindow("Canny");
-    imshow("Canny",contours);
+    vector<Vec4i> lines;
+    // 检测直线，最小投票为90，线条不短于50，间隙不小于10
+    HoughLinesP(contours,lines,1,CV_PI/180,80,50,10);
+
+    Scalar color = Scalar(0,255,0);
+    drawDetectLines(image,lines, color);
+
+    namedWindow("Lines");
+    imshow("Lines",image);
     waitKey();
     return 0;
 }

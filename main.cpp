@@ -68,17 +68,32 @@ void drawDetectLines(Mat &image, const vector<Vec4i> &lines, Scalar &color) {
 }
 
 int main(int argc, char **argv) {
-    Mat image=imread("../input/plan2.jpg");
+    Mat image1=imread("../input/plan2.jpg");
+    Mat image2=imread("../input/plan1.jpg");
+    // 检测surf特征点
+    vector<KeyPoint> keypoints1,keypoints2;
+    SurfFeatureDetector detector(400);
+    detector.detect(image1, keypoints1);
+    detector.detect(image2, keypoints2);
+    // 描述surf特征点
+    SurfDescriptorExtractor surfDesc;
+    Mat descriptros1,descriptros2;
+    surfDesc.compute(image1,keypoints1,descriptros1);
+    surfDesc.compute(image2,keypoints2,descriptros2);
 
-    vector<KeyPoint> keypoints;
+    // 计算匹配点数
+    BruteForceMatcher<L2<float>>matcher;
+    vector<DMatch> matches;
+    matcher.match(descriptros1,descriptros2,matches);
+    std::nth_element(matches.begin(),matches.begin()+24,matches.end());
+    matches.erase(matches.begin()+25,matches.end());
+    // 画出匹配图
+    Mat imageMatches;
+    drawMatches(image1,keypoints1,image2,keypoints2,matches,
+                imageMatches,Scalar(255,0,0));
 
-    SurfFeatureDetector surf(2500.);
-    surf.detect(image,keypoints);
-
-    drawKeypoints(image,keypoints,image,Scalar(255,0,0),
-                  DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-    namedWindow("result");
-    imshow("result",image);
+    namedWindow("image2");
+    imshow("image2",image2);
     waitKey();
     return 0;
 }
